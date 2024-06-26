@@ -7,6 +7,7 @@ import RedirectView from "./views/RedirectView.js"
 import BrowseView from "./views/BrowseView.js"
 import NotAuthorizedView from "./views/NotAuthorizedView.js"
 import BaseView from "./views/BaseView.js"
+import { turnOnOverlay, turnOffOverlay } from "./overlay.js"
 
 const navigateTo = url => {
     history.pushState(null, null, url);
@@ -48,10 +49,10 @@ async function router() {
 
 function updateView(selector: string, view: BaseView) {
     const app: HTMLElement = document.querySelector(selector);
-    app.classList.add("overlay");
+    turnOnOverlay(app);
     view.getHtml().then((value) => {
         app.innerHTML = value;
-        app.classList.remove("overlay");
+        turnOffOverlay(app);
     });
 
 }

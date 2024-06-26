@@ -1,11 +1,151 @@
-﻿body {
+﻿html {
+    box-sizing: border-box;
+}
+
+* {
+    box-sizing: inherit;
+}
+
+body {
+    color: #242424;
+    line-height: 1.5;
+    letter-spacing: normal;
+    margin: 0px;
+    -ms-overflow-style: scrollbar;
+}
+
+ul {
+    margin: 0px;
+}
+
+a {
+    text-decoration: none;
+    border: 1px hidden inherit;
+    padding: 4px;
+    color: inherit;
+
+    &:hover {
+        border: 1px dashed blue;
+        padding: 3px;
+    }
+}
+
+header {
+    background-color: #242424;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+    display: inline-block;
+    padding: 10px 10px;
+    margin: 0px;
+    width: 100%;
+    box-shadow: 0px 2px 4px grey;
+
+    nav {
+        ul {
+            height: 100%;
+            float: left;
+            display: inline-flex;
+            vertical-align: central;
+
+            &.profile {
+                float: right;
+            }
+        }
+    }
+
+    .title {
+        height: 100%;
+        float: left;        
+        display: inline-flex;
+        vertical-align: central;
+
+        img {
+            margin-top:-3px;
+            width: 24px;
+            height: 24px;
+        }
+    }
+}
+
+main {
+    margin: 10px;
+}
+
+nav {
+
+    ul {
+        list-style: none;
+
+        li {
+            margin: unset 2px unset 2px;
+
+            &:not(:last-child) {
+                border-right: 1px solid;
+            }
+        }
+
+
+        li a {
+            text-decoration: none;
+            height: 100%;
+            width: 100%;
+        }
+    }
+}
+
+footer {
+    border-top: 1px solid #242424;
+
+    ul {
+        list-style: none;
+        display: flex;
+        vertical-align: middle;
+        justify-content: center;
+
+        li {
+            float: left;
+            padding: 0px 5px;
+            margin: 5px 0px;
+
+            &:not(:last-child) {
+                border-right: 1px solid;
+            }
+
+            &.social {
+                border-right: 0px;
+            }
+        }
+    }
+}
+
+.social a {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
+    border: 1px solid black;
+    background: white;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 200ms;
+    cursor: pointer;
+
+    img {
+        max-width: 20px;
+    }
+
+    &:hover {
+        border: 1px solid blue;
+    }
 }
 
 .overlay {
     position: relative;
     z-index: 1;
 
-    ::before {
+    &::before {
         content: "";
         position: absolute; /* Sit on top of the page content */
         display: block; /* Hidden by default */
@@ -19,4 +159,8 @@
         z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
         cursor: pointer; /* Add a pointer on hover */
     }
+}
+
+.socialMedia {
+    float: right;
 }

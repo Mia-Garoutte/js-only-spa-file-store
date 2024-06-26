@@ -331,3 +331,4 @@ ASALocalRun/
 
 # Exclude generated files
 wwwroot/js
+wwwroot/styles
