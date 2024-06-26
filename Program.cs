@@ -13,9 +13,14 @@ namespace TestProject {
 
             app.UseHttpsRedirection();
 
+            app.UseDefaultFiles();
             app.UseStaticFiles();
-
+            
             app.MapControllers();
+
+            app.MapFallbackToFile("index.html");
+            
+            //endpoints.MapFallbackToFile("index.html").WithMetadata(new HttpMethodMetadata(new[] { "GET" }))
 
             app.Run();
         }
