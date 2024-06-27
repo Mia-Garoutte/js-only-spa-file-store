@@ -7,10 +7,7 @@ export default class extends BaseView {
         this.destinationUrl = url;
     }
 
-    async getHtml() {
-
-        document.location.href = this.destinationUrl;
-        //this really wont matter, but...
-        return ``;
+    async doRender(): Promise<void> {
+        document.location.href = this.destinationUrl;        
     }
 }

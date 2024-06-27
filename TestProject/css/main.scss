@@ -48,21 +48,36 @@ header {
             float: left;
             display: inline-flex;
             vertical-align: central;
+            list-style: none;
 
             &.profile {
                 float: right;
+            }
+
+            li {
+                margin: unset 2px unset 2px;
+
+                &:not(:last-child) {
+                    border-right: 1px solid;
+                }
+
+                a {
+                    text-decoration: none;
+                    height: 100%;
+                    width: 100%;
+                }
             }
         }
     }
 
     .title {
         height: 100%;
-        float: left;        
+        float: left;
         display: inline-flex;
         vertical-align: central;
 
         img {
-            margin-top:-3px;
+            margin-top: -3px;
             width: 24px;
             height: 24px;
         }
@@ -71,28 +86,6 @@ header {
 
 main {
     margin: 10px;
-}
-
-nav {
-
-    ul {
-        list-style: none;
-
-        li {
-            margin: unset 2px unset 2px;
-
-            &:not(:last-child) {
-                border-right: 1px solid;
-            }
-        }
-
-
-        li a {
-            text-decoration: none;
-            height: 100%;
-            width: 100%;
-        }
-    }
 }
 
 footer {
@@ -163,4 +156,64 @@ footer {
 
 .socialMedia {
     float: right;
+}
+
+nav.breadcrumb ul {
+    display: inline-flex;
+    list-style: none;
+
+    li::after {
+        content: "/";
+    }
+}
+
+nav.treelist ul {
+    list-style-image: image();
+
+    li {
+        &.directory {
+            list-style-image: url('/images/Folder.svg');
+        }
+
+        &.file {
+            list-style-image: url('/images/file.svg') ;            
+        }
+    }
+}
+/*.directory a::before {
+    content: '';
+    background-image: url('/images/Folder.svg');
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+}
+
+.file a::before {
+    content: '';
+    background-image: url('/images/File.svg');
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+}*/
+
+.btn {
+    border: 0;
+    cursor:pointer;
+    padding: 0 10px;
+    font-size: 1rem;
+    text-align: center;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    border-radius: 10px;
+    background-color: rgb(220 0 0 / 100%);
+    background-image: linear-gradient( to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%) );
+    box-shadow: inset 2px 2px 3px rgb(255 255 255 / 60%), inset -2px -2px 3px rgb(0 0 0 / 60%);
+
+    &:hover {
+        background-color: rgb(255 0 0 / 100%);
+    }
+
+    &:active {
+        box-shadow: inset -2px -2px 3px rgb(255 255 255 / 60%), inset 2px 2px 3px rgb(0 0 0 / 60%);
+    }
 }

@@ -50,8 +50,7 @@ async function router() {
 function updateView(selector: string, view: BaseView) {
     const app: HTMLElement = document.querySelector(selector);
     turnOnOverlay(app);
-    view.getHtml().then((value) => {
-        app.innerHTML = value;
+    view.render(app).then(() => {
         turnOffOverlay(app);
     });
 
