@@ -330,5 +330,5 @@ ASALocalRun/
 .mfractor/
 
 # Exclude generated files
-wwwroot/js
-wwwroot/styles
+*/wwwroot/js
+*/wwwroot/styles

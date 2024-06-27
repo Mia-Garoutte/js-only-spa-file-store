@@ -26,4 +26,8 @@
     <Folder Include="wwwroot\styles\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\POC.FileStore\POC.FileStore.csproj" />
+  </ItemGroup>
+
 </Project>
