@@ -37,7 +37,7 @@ namespace POC.FileStore
         }
 
         private string RelativeToAbsoulteFileSystem(string partialPath) => Path.Combine(_fileStoreLocation, partialPath.TrimStart('\\'));
-
+        
         private DirectoryAsset GetDirectory(string urlPath, string path, string name)
         {
             DirectoryAsset result = new DirectoryAsset()
@@ -87,25 +87,30 @@ namespace POC.FileStore
             return ValidatePath(partialPath, name);
         }
 
-        public Asset? GetAsset(string urlPath)
-        {
-            string partialPath, name;
+        
 
-            if (!GenerateVaildFileLocation(urlPath, out partialPath, out name))
+        public string CreateDirectory(string destination)
+        {
+            string partialPath,name;
+            if (!GenerateVaildFileLocation(destination, out partialPath, out name))
             {
-                return null;
+                return string.Empty;
             }
             string path = RelativeToAbsoulteFileSystem(partialPath);
 
-            if (File.Exists(path))
+            if (!Directory.Exists(path))
             {
-                return GetFile(urlPath, path, name);
+                try
+                {
+                    DirectoryInfo dir = Directory.CreateDirectory(path);
+                    return partialPath;
+                }
+                catch
+                {
+                    return string.Empty;
+                }
             }
-            else if (Directory.Exists(path))
-            {
-                return GetDirectory(urlPath, path, name);
-            }
-            return null;
+            return string.Empty;
         }
 
         public bool DeleteAsset(string urlPath)
@@ -152,6 +157,28 @@ namespace POC.FileStore
             return result;
         }
 
-        
+        public Asset? GetAsset(string urlPath)
+        {
+            string partialPath, name;
+
+            if (!GenerateVaildFileLocation(urlPath, out partialPath, out name))
+            {
+                return null;
+            }
+            string path = RelativeToAbsoulteFileSystem(partialPath);
+
+            if (File.Exists(path))
+            {
+                return GetFile(urlPath, path, name);
+            }
+            else if (Directory.Exists(path))
+            {
+                return GetDirectory(urlPath, path, name);
+            }
+            return null;
+        }
+
+
+
     }
 }

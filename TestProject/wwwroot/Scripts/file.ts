@@ -27,12 +27,17 @@ async function deleteFileFromTree(item: HTMLElement): Promise<boolean> {
     return true;
 }
 
+async function createDirectory(item: HTMLElement) {
+    const input: HTMLElement = document.getElementById('txtNewDirectory'); //refactor this after testing
+
+}
 function handleFileClick(evt: MouseEvent, target: HTMLElement): boolean {
     if (target.matches('[data-delete-file]')) {
         evt.preventDefault();
         deleteFileFromTree(target);
         return true;
     }
+    
     return false;
 }
 

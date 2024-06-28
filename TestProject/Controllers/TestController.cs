@@ -67,5 +67,37 @@ namespace TestProject.Controllers
             return BadRequest();
         }
 
+
+        [HttpPost]
+        public IActionResult Post(DirectoryForm form)
+        {
+            return Post("/", form);
+        }
+
+        
+        [HttpPost]
+        [Route("{*path}")]
+        public IActionResult Post(string path, DirectoryForm form)
+        {
+
+            if (string.IsNullOrWhiteSpace(form.directoryName))
+            {
+                return BadRequest();
+            }
+
+            string dir = _fileStore.CreateDirectory(Path.Combine( path, form.directoryName));
+            if (string.IsNullOrWhiteSpace(dir))
+            {
+                return BadRequest();
+            }
+            return Created(dir,dir);
+        }
+
+
+    }
+
+    public class DirectoryForm
+    {
+        public string directoryName { get; set; } = string.Empty;
     }
 }

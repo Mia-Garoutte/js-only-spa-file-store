@@ -1,9 +1,17 @@
 ﻿import { turnOffOverlay, turnOnOverlay } from "../overlay.js";
+import { navigateTo, router } from "../router.js";
 import BaseView from "./BaseView.js"
 
+// this file needs to be re-factored to separate some concerns.
+// for a POC sure... but not Prod worth
 export default class extends BaseView {
 
+    api: string;
+
     async doRender(): Promise<void> {
+        const path: string = document.location.pathname.substring("/browse".length);
+        this.api = document.location.origin + '/test' + path;
+
         this.setTitle("Browse");
         turnOnOverlay(this.content);
         await this.getData()
@@ -15,7 +23,7 @@ export default class extends BaseView {
                 this.setTitle(`Browse - ${data.location}`);
                 this.newHeading(data.name);
                 this.makeBreadCrumbs(data.breadCrumb as string[]);
-
+                this.makeForm();
                 this.makeChildren(data.children as any[]);
                 turnOffOverlay(this.content);
             });
@@ -27,11 +35,67 @@ export default class extends BaseView {
         this.newParagraph(error);
     }
 
-    async getData(): Promise<any> {
-        const path: string = document.location.pathname.substring("/browse".length);
-        const api = document.location.origin + '/test' + path;
+    makeForm(): void {
+        const form = this.newForm('frmCreateDirectory') as HTMLFormElement;
+        form.action = this.api;
+        form.method = 'POST';
+        const txtDirectoryName = this.newInput('new directory name', 'directoryName', 'txtNewDirectory', form);
+        const formSubmit = this.newSpan('New Directory', form, 'btn create');
 
-        const response = await window.fetch(api, {
+        formSubmit.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            this.gatherDirectoryData(form);
+
+        })
+        form.addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            this.gatherDirectoryData(form);
+        })
+
+    }
+
+    async gatherDirectoryData(form: HTMLFormElement): Promise<void> {
+        turnOnOverlay(this.content);
+        //const formElement: HTMLFormElement = document.querySelector('#frmCreateDirectory');
+        const data = new FormData(form);
+        if (data.get('directoryName') === '') {
+            alert('We cant create nothing');
+            turnOffOverlay(this.content);
+            return;
+        }
+        //for (let entry of data) {
+        //    console.log(entry);
+        //}
+        await fetch(form.action, {
+            method: form.method,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ directoryName: data.get('directoryName') })
+        })
+            .then(response => {
+                if (response.status !== 201) {
+                    turnOffOverlay(this.content);
+                    alert("the items was not created");
+                    Promise.reject(JSON.stringify(response.statusText));                    
+                }
+                const location = response.headers.get('location');
+                navigateTo(`/browse${location}`);
+            })
+            .catch(error => {
+                alert("the items was not created due to an error");
+                Promise.reject(JSON.stringify(error));
+                console.error('Unable to delete item.', error)
+            });
+        turnOffOverlay(this.content);
+        return;
+    }
+
+    //todo: refactor the data this out of view.
+    async getData(): Promise<any> {
+
+        const response = await window.fetch(this.api, {
             method: 'GET',
             headers: { 'content-type': 'application/json;charset=UTF-8', }
         });
@@ -75,56 +139,5 @@ export default class extends BaseView {
         return listItem;
 
     }
- /*
-    async getHtml(main: HTMLElement): Promise<string> {
-
-       const path: string = document.location.pathname.substring("/browse".length);
-        const api = document.location.origin + '/test' + path;
-        let result: string = "";
-
-        const response = await window.fetch(api, {
-            method: 'GET',
-            headers: { 'content-type': 'application/json;charset=UTF-8', }
-
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            result = `<h2>Error </h2><p>${JSON.stringify(data)}</p>`;
-            return result;
-        }
-        result = `<h1>${data.name}</h1>
-        
-<nav class='breadcrumb'><ul><li><a href='/browse' data-link>Root</a></il>`;
-        let bCPath = '/browse'
-        result += data.breadCrumb.map((item) => {
-            const part = item;
-
-            bCPath += `/${part}`;
-            return `<li><a href='${bCPath}' data-link>${item}</a></il>`
-        }).join('\n');
-        
-        result += `<li><input type="text" onenter=''/><span class></span></li></ul></nav><nav class='treelist'><ul>`;
-        result += data.children.map((item) => {
-            let html: string = `<li class='${item.assetType.toLowerCase()}' data-location='/test${item.location}'>`;
-            let deleteFunctionName: string = "deleteFileFromTree";
-            if (item.assetType.toLowerCase() === 'directory') {
-                //its a directory
-                deleteFunctionName = "confirmDeleteFromTree";
-            }
-            else {
-                //its a file
-            }
-
-            if (item.destructiveActionAllowed) {
-                html += `<span class="btn delete" data-delete-file>Delete</span>`;
-            }
-            html += `<a href='/browse${item.location}' data-link>${item.name}</a></li>`;
-            return html;
-        }).join('\n')
-        result += `</ul></nav>`;
-        return result;
-
-    }
-            */
 
 }
