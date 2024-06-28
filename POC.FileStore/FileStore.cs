@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,13 +20,16 @@ namespace POC.FileStore
         private readonly string _fileStoreLocation;
         private const string DirectoryType = "Directory";
         private const string FileType = "File";
+        private ILogger<FileStore> _logger;
         /// <summary>
         /// Create a file store
         /// </summary>
         /// <param name="fileStoreLocation"></param>
-        public FileStore(string fileStoreLocation)
+        public FileStore(ILogger<FileStore> logger, IOptions<FileStoreOptions> config)
         {
-            _fileStoreLocation = fileStoreLocation;
+            _fileStoreLocation = config.Value.FileStoreRootPath;
+            _logger = logger;
+
             if (!System.IO.Directory.Exists(_fileStoreLocation))
             {
                 throw new DirectoryNotFoundException($"Path {_fileStoreLocation} was not found");

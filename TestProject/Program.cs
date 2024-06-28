@@ -7,12 +7,16 @@ namespace TestProject
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            string location = builder.Configuration.GetValue<string>("FileStoreLocation");
+            //builder.Services.Configure<FileStoreOptions>(builder.Configuration.GetSection(FileStoreOptions.Section));
+            
+            // builder.Configuration.GetValue<string>("FileStoreLocation");
             // Add services to the container.
-            builder.Services.AddScoped<IFileStore>(x => new FileStore(location));
+            
             builder.Services.AddControllers();
-
+            builder.Services.AddScoped<IFileStore, FileStore>();
+            builder.Services.AddOptions<FileStoreOptions>().BindConfiguration(FileStoreOptions.Section)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
