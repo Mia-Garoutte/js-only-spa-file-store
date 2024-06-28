@@ -50,13 +50,19 @@ namespace POC.FileStore
         }
         private string RelativeToAbsoulteFileSystem(string partialPath) => Path.Combine(_fileStoreLocation, partialPath.TrimStart('\\'));
 
+        private static string GetParentPath(string url)
+        {
+            return (Path.GetDirectoryName(url) ?? "/").Replace("\\", "/");
+
+        }
         private DirectoryAsset GetDirectory(string urlPath, string path, string name)
         {
             DirectoryAsset result = new DirectoryAsset()
             {
                 Name = string.IsNullOrWhiteSpace(name) ? "Root" : name,
                 Location = urlPath,
-                Children = new List<Asset>()
+                Children = new List<Asset>(),
+                Parent=GetParentPath(urlPath)
             };
 
 
@@ -87,9 +93,10 @@ namespace POC.FileStore
             items.Add(new FileAsset()
             {
                 Name = fileName,
-                Location = Path.Combine(urlPath, fileName).Replace("\\","/"),
-                SizeInBytes = fileInfo.Length
-            });
+                Location = Path.Combine(urlPath, fileName).Replace("\\", "/"),
+                SizeInBytes = fileInfo.Length,
+                Parent = urlPath
+            }); ;
             return size;
         }
 
@@ -181,12 +188,16 @@ namespace POC.FileStore
 
             if (File.Exists(path))
             {
+                var contents = await File.ReadAllBytesAsync(path);
                 FileAsset file = new FileAsset
                 {
                     Name = name,
-                    Location = urlPath
+                    Location = urlPath,
+                    Parent = GetParentPath(urlPath),
+                    SizeInBytes = contents.Length,
+                    Contents = contents
                 };
-                file.Contents = await File.ReadAllBytesAsync(path);
+                
 
                 return file;
             }

@@ -9,8 +9,8 @@ export default class extends BaseView {
     async doRender(): Promise<void> {
         this.setTitle("404");
 
-        this.newHeading("404");
-        this.newParagraph(`What you are looking for was not found on in this little app.  Maybe it is elsewhere?.`);
+        this.addHeading("404");
+        this.addParagraph(`What you are looking for was not found on in this little app.  Maybe it is elsewhere?.`);
 
 
     }

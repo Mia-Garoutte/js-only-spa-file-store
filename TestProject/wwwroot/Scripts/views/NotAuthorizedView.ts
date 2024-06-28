@@ -8,8 +8,8 @@ export default class extends BaseView {
 
     async doRender(): Promise<void> {
         this.setTitle("401");
-        this.newHeading("401");
-        this.newParagraph(`Sorry, but you do not have the access required to do that.`);
+        this.addHeading("401");
+        this.addParagraph(`Sorry, but you do not have the access required to do that.`);
 
     }
 }

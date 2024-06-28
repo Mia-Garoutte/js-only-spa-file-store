@@ -1,5 +1,8 @@
 ﻿import { handleFileClick } from './file.js';
 import { navigateTo, router } from './router.js';
+import SearchView from './views/SearchView.js';
+
+new SearchView(document.getElementById('searchTrigger'), document.getElementById('dialogs'));
 
 window.addEventListener("popstate", router);
 document.addEventListener("DOMContentLoaded", () => {

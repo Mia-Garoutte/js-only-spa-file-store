@@ -22,7 +22,7 @@ export default class extends BaseView {
             })
             .then((data: any) => {
                 this.setTitle(`Browse - ${data.location}`);
-                this.newHeading(data.name);
+                this.addHeading(data.name);
                 this.makeStatics(data);
                 this.makeBreadCrumbs(data.breadCrumb as string[]);
                 this.makeDirectoryForm();
@@ -33,22 +33,19 @@ export default class extends BaseView {
 
     }
 
-    ReportError(error: string): void {
-        this.newHeading("Error");
-        this.newParagraph(error);
-    }
+    
     //data should be typed...
     makeStatics(data: any): void {
-        this.newSpan(`${data.name} has ${data.totalFiles} files for ${Math.ceil(data.sizeInBytes / 1024)}KB.`)
-        this.newSpan(`${data.name} has ${data.totalDirectories} sub-directories.`)
+        this.addSpan(`${data.name} has ${data.totalFiles} files for ${Math.ceil(data.sizeInBytes / 1024)}KB.`)
+        this.addSpan(`${data.name} has ${data.totalDirectories} sub-directories.`)
     }
     makeFileForm(): void {
-        const form = this.newForm('frmCreateFile') as HTMLFormElement;
+        const form = this.addForm('frmCreateFile') as HTMLFormElement;
         form.action = `${this.fileApi}`;
         form.method = 'POST';
         form.enctype = "multipart/form-data";
-        const fileFile = this.newFileInput('FormFile', 'FormFile', form);
-        const formSubmit = this.newSpan('Upload File', form, 'btn create');
+        const fileFile = this.addFileInput('FormFile', 'FormFile', form);
+        const formSubmit = this.addSpan('Upload File', form, 'btn create');
 
         formSubmit.addEventListener("click", (evt) => {
             evt.preventDefault();
@@ -62,11 +59,11 @@ export default class extends BaseView {
     }
 
     makeDirectoryForm(): void {
-        const form = this.newForm('frmCreateDirectory') as HTMLFormElement;
+        const form = this.addForm('frmCreateDirectory') as HTMLFormElement;
         form.action = this.api;
         form.method = 'POST';
-        const txtDirectoryName = this.newTextInput('new directory name', 'DirectoryName', 'txtNewDirectory', form);
-        const formSubmit = this.newSpan('New Directory', form, 'btn create');
+        const txtDirectoryName = this.addTextInput('new directory name', 'DirectoryName', 'txtNewDirectory', form);
+        const formSubmit = this.addSpan('New Directory', form, 'btn create');
 
         formSubmit.addEventListener("click", (evt) => {
             evt.preventDefault();
@@ -161,32 +158,36 @@ export default class extends BaseView {
     }
 
     private makeChildren(children: any[]): HTMLElement {
-        const nav = this.newNavigation('treelist');
-        const list = this.newUnorderedList(nav);
+        const nav = this.addNavigation('treelist');
+        const list = this.addUnorderedList(nav);
         children.map((item: any) => {
-            const listItem = this.newListItem('', list, item.assetType.toLowerCase());
-            listItem.setAttribute('data-location', `/test${item.location}`);
-            if (item.destructiveActionAllowed) {
-                this.newSpan('Delete', listItem, 'btn delete', 'data-delete-file');
-            }
-            const link=this.newLink(item.name, '', listItem);
-            if (item.assetType.toLowerCase() === 'directory') {
-                link.setAttribute('data-link', '');
-                link.setAttribute('href', `/browse${item.location}`); 
-            } else {
-                link.setAttribute("target", '_blank');
-                link.setAttribute("download", '');
-                link.setAttribute('href', `/test${item.location}`);
-                this.newSpan(`($sizeInKB}KB)`, link);
-            }
+            this.makeAsstListItem(list, item);
         });
 
         return list;
     }
 
+    private makeAsstListItem(parent: HTMLElement, item: any) {
+        const listItem = this.addListItem('', parent, item.assetType.toLowerCase());
+        listItem.setAttribute('data-location', `/test${item.location}`);
+        if (item.destructiveActionAllowed) {
+            this.addSpan('Delete', listItem, 'btn delete', 'data-delete-file');
+        }
+        const link = this.addLink(item.name, '', listItem);
+        if (item.assetType.toLowerCase() === 'directory') {
+            link.setAttribute('data-link', '');
+            link.setAttribute('href', `/browse${item.location}`);
+        } else {
+            link.setAttribute("target", '_blank');
+            link.setAttribute("download", '');
+            link.setAttribute('href', `/test${item.location}`);
+            this.addSpan(`(${item.sizeInKB}KB)`, link);
+        }
+    }
+
     private makeBreadCrumbs(locations: string[]): HTMLElement {
-        const breadcrumb = this.newNavigation('breadcrumb');
-        const breadcrumbList = this.newUnorderedList(breadcrumb);
+        const breadcrumb = this.addNavigation('breadcrumb');
+        const breadcrumbList = this.addUnorderedList(breadcrumb);
 
         let bcPath = '/browse'
         this.makeNavigationListItem(breadcrumbList, '', '', bcPath, 'Root', "data-link");
@@ -197,8 +198,8 @@ export default class extends BaseView {
         return breadcrumb;
     }
     private makeNavigationListItem(parent: HTMLElement, liStyles: string, liDataAttr: string, url: string, label: string, aDataAttr: string = ''): HTMLElement {
-        const listItem = this.newListItem('', parent, liStyles, liDataAttr);
-        this.newLink(label, url, listItem, aDataAttr);
+        const listItem = this.addListItem('', parent, liStyles, liDataAttr);
+        this.addLink(label, url, listItem, aDataAttr);
         return listItem;
 
     }
