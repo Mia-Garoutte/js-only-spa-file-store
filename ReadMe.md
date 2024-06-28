@@ -1,4 +1,4 @@
-FileStoreRootPathFileStoreRootPath# POC
+# POC
 This project was built as a POC without any frameworks.  Yes, React or Next.js would have made this cleaner and a breeze.  
 
 ## requirements
