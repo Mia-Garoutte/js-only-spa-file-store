@@ -17,6 +17,11 @@
     protected newParagraph(content: string): HTMLElement {
         return this.newNode(content, 'p');
     }
+
+    protected newDiv(): HTMLElement {
+        return this.newNode('', 'div');
+    }
+
     protected newForm(id: string, parent: HTMLElement = this.content): HTMLElement {
         const node: HTMLElement = this.newNode('', 'form');
         node.setAttribute('id', id);

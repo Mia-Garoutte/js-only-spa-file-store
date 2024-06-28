@@ -6,6 +6,8 @@
         public string Location { get; set; } = string.Empty;
         public string AssetType { get; protected set; } = string.Empty;
 
+        public long SizeInBytes { get; set; }
+
         public bool DestructiveActionAllowed { get { return Asset.IsDestructiveActionAllowed(this.Location); } }
         public static bool IsDestructiveActionAllowed(string path)
         {

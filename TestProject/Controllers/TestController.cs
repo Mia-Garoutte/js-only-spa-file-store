@@ -20,6 +20,13 @@ namespace TestProject.Controllers
         }
 
         [HttpGet]
+        [Route("search/{search}")]
+        public IActionResult Search(string search)
+        {
+            SearchResult? result= _fileStore.Search(search);
+            return Ok(result);
+        }
+        [HttpGet]
         [ProducesResponseType(typeof(Asset), 200)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get()

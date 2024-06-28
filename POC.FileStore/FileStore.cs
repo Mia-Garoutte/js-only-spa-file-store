@@ -1,6 +1,10 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -36,7 +40,14 @@ namespace POC.FileStore
                 || Path.GetInvalidFileNameChars().Any(c => name.Contains(c)));
             return result;
         }
-
+        private static bool ValidateSearchTerms(string term)
+        {
+            bool result = !string.IsNullOrWhiteSpace(term)                
+                && !(badNameBits.Any(s => term.Contains(s))
+                || Path.GetInvalidPathChars().Any(c => term.Contains(c))
+                || Path.GetInvalidFileNameChars().Any(c => term.Contains(c)));
+            return result;
+        }
         private string RelativeToAbsoulteFileSystem(string partialPath) => Path.Combine(_fileStoreLocation, partialPath.TrimStart('\\'));
 
         private DirectoryAsset GetDirectory(string urlPath, string path, string name)
@@ -48,25 +59,38 @@ namespace POC.FileStore
                 Children = new List<Asset>()
             };
 
+
             foreach (string dir in Directory.GetDirectories(path))
             {
                 result.Children.Add(new DirectoryAsset()
                 {
                     Name = Path.GetFileName(dir) ?? string.Empty,
-                    Location = Path.Combine(urlPath, Path.GetFileName(dir) ?? string.Empty)
+                    Location = Path.Combine(urlPath, Path.GetFileName(dir) ?? string.Empty).Replace("\\","/")
                 });
             }
 
+            long size = 0;
             foreach (string file in Directory.GetFiles(path))
             {
-                result.Children.Add(new FileAsset()
-                {
-                    Name = Path.GetFileName(file),
-                    Location = Path.Combine(urlPath, Path.GetFileName(file))
-                });
+                size = GetFileFromPath(urlPath, result.Children, size, file);
             }
-
+            result.SizeInBytes = size;
             return result;
+        }
+
+        private static long GetFileFromPath(string urlPath, IList<Asset> items, long size, string file)
+        {
+            FileInfo fileInfo = new FileInfo(file);
+            size += fileInfo.Length;
+            string fileName = Path.GetFileName(file);
+
+            items.Add(new FileAsset()
+            {
+                Name = fileName,
+                Location = Path.Combine(urlPath, fileName).Replace("\\","/"),
+                SizeInBytes = fileInfo.Length
+            });
+            return size;
         }
 
         private static bool GenerateVaildFileLocation(string urlPath, out string partialPath, out string name)
@@ -199,6 +223,42 @@ namespace POC.FileStore
             }
 
             return partialPath;
+        }
+
+        public SearchResult? Search(string search)
+        {
+            if (!ValidateSearchTerms(search))
+            {
+                return null;
+            }
+            SearchResult result = new SearchResult();
+
+            result.Term = $"*{search}*";
+
+            EnumerationOptions options = new EnumerationOptions();
+            options.RecurseSubdirectories = true;
+            options.MatchCasing = MatchCasing.CaseInsensitive;
+            options.MatchType = MatchType.Simple;
+
+            long size = 0;
+            int rootLength = _fileStoreLocation.Length;
+            foreach (string file in Directory.EnumerateFiles(_fileStoreLocation, result.Term, options))
+            {
+                
+                size = GetFileFromPath(GetSearchLocation(rootLength, file), result.ItemsFound, size, file);
+            }
+            result.SizeInBytes = size; 
+            return result;
+        }
+
+        private static string GetSearchLocation(int rootLength, string fileLocation )
+        {
+            string result = (Path.GetDirectoryName(fileLocation)?.Substring(rootLength) ?? fileLocation.Substring(rootLength)).Replace("\\","/");
+            if(!result.StartsWith("/"))
+            {
+                result = "/" + result;
+            }
+            return result;
         }
     }
 }

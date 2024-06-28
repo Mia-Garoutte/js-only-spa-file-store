@@ -6,6 +6,6 @@
         string CreateDirectory(string destination);
         bool DeleteAsset(string path);
         Task<Asset?> GetAsset(string path);
-        
+        SearchResult? Search(string search);
     }
 }

@@ -3,7 +3,7 @@ import { navigateTo, router } from "../router.js";
 import BaseView from "./BaseView.js"
 
 // this file needs to be re-factored to separate some concerns.
-// for a POC sure... but not Prod worth
+// for a POC sure... but not Prod worthy
 export default class extends BaseView {
 
     api: string;
@@ -23,6 +23,7 @@ export default class extends BaseView {
             .then((data: any) => {
                 this.setTitle(`Browse - ${data.location}`);
                 this.newHeading(data.name);
+                this.makeStatics(data);
                 this.makeBreadCrumbs(data.breadCrumb as string[]);
                 this.makeDirectoryForm();
                 this.makeFileForm();
@@ -36,7 +37,11 @@ export default class extends BaseView {
         this.newHeading("Error");
         this.newParagraph(error);
     }
-
+    //data should be typed...
+    makeStatics(data: any): void {
+        this.newSpan(`${data.name} has ${data.totalFiles} files for ${Math.ceil(data.sizeInBytes / 1024)}KB.`)
+        this.newSpan(`${data.name} has ${data.totalDirectories} sub-directories.`)
+    }
     makeFileForm(): void {
         const form = this.newForm('frmCreateFile') as HTMLFormElement;
         form.action = `${this.fileApi}`;
@@ -171,7 +176,8 @@ export default class extends BaseView {
             } else {
                 link.setAttribute("target", '_blank');
                 link.setAttribute("download", '');
-                link.setAttribute('href', `/test${item.location}`); 
+                link.setAttribute('href', `/test${item.location}`);
+                this.newSpan(`($sizeInKB}KB)`, link);
             }
         });
 
