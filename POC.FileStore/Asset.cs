@@ -13,6 +13,8 @@
             {
                 case "\\":
                 case "\\.gitkeep":
+                case "/":
+                case "/.gitkeep":
                     return false;
                 default:
                     return true;

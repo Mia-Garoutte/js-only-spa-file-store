@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace POC.FileStore
 {
@@ -26,7 +27,7 @@ namespace POC.FileStore
             }
         }
 
-        private bool ValidatePath(string path, string name)
+        private static bool ValidatePath(string path, string name)
         {
             bool result = !string.IsNullOrWhiteSpace(path)
                 && path[0] == '\\'
@@ -37,7 +38,7 @@ namespace POC.FileStore
         }
 
         private string RelativeToAbsoulteFileSystem(string partialPath) => Path.Combine(_fileStoreLocation, partialPath.TrimStart('\\'));
-        
+
         private DirectoryAsset GetDirectory(string urlPath, string path, string name)
         {
             DirectoryAsset result = new DirectoryAsset()
@@ -61,41 +62,28 @@ namespace POC.FileStore
                 result.Children.Add(new FileAsset()
                 {
                     Name = Path.GetFileName(file),
-                    Location = Path.Combine(urlPath, Path.GetFileName(file)),
-                    FileLocation = file
+                    Location = Path.Combine(urlPath, Path.GetFileName(file))
                 });
             }
 
             return result;
         }
 
-        private FileAsset GetFile(string urlPath, string path, string name)
-        {
-            FileAsset result = new FileAsset()
-            {
-                Name = name,
-                Location = urlPath,
-                FileLocation = path
-            };
-            return result;
-        }
-
-        private bool GenerateVaildFileLocation(string urlPath, out string partialPath, out string name)
+        private static bool GenerateVaildFileLocation(string urlPath, out string partialPath, out string name)
         {
             partialPath = urlPath.Replace('/', Path.DirectorySeparatorChar);
             name = partialPath.Split(Path.DirectorySeparatorChar).LastOrDefault("");
             return ValidatePath(partialPath, name);
         }
 
-        
-
         public string CreateDirectory(string destination)
         {
-            string partialPath,name;
+            string partialPath, name;
             if (!GenerateVaildFileLocation(destination, out partialPath, out name))
             {
                 return string.Empty;
             }
+
             string path = RelativeToAbsoulteFileSystem(partialPath);
 
             if (!Directory.Exists(path))
@@ -157,7 +145,7 @@ namespace POC.FileStore
             return result;
         }
 
-        public Asset? GetAsset(string urlPath)
+        public async Task<Asset?> GetAsset(string urlPath)
         {
             string partialPath, name;
 
@@ -169,7 +157,14 @@ namespace POC.FileStore
 
             if (File.Exists(path))
             {
-                return GetFile(urlPath, path, name);
+                FileAsset file = new FileAsset
+                {
+                    Name = name,
+                    Location = urlPath
+                };
+                file.Contents = await File.ReadAllBytesAsync(path);
+
+                return file;
             }
             else if (Directory.Exists(path))
             {
@@ -178,7 +173,32 @@ namespace POC.FileStore
             return null;
         }
 
+        public async Task<string> CreateFile(string destination, string fileName, byte[] Content)
+        {
+            string partialPath, name;
 
+            if (!GenerateVaildFileLocation(Path.Combine(destination, fileName), out partialPath, out name))
+            {
+                return String.Empty;
+            }
+            string path = RelativeToAbsoulteFileSystem(partialPath);
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    await File.WriteAllBytesAsync(path, Content);
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+            catch
+            {
+                return string.Empty;
+            }
 
+            return partialPath;
+        }
     }
 }

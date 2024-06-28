@@ -2,9 +2,10 @@
 {
     public interface IFileStore
     {
+        Task<string> CreateFile(string destination, string fileName, byte[] Content);
         string CreateDirectory(string destination);
         bool DeleteAsset(string path);
-        Asset? GetAsset(string path);
+        Task<Asset?> GetAsset(string path);
         
     }
 }

@@ -44,10 +44,19 @@
         return node;
     }
 
-    protected newInput(placeholder: string, name: string, id: string, parent: HTMLElement = this.content): HTMLElement {
+    protected newFileInput( name: string, id: string, parent: HTMLElement = this.content): HTMLElement {
+        const node: HTMLElement = this.newNode('', 'input', parent);
+        node.setAttribute('id', id);
+        node.setAttribute('name', name);        
+        node.setAttribute('type', 'file');
+        return node;
+    }
+
+    protected newTextInput(placeholder: string, name: string, id: string, parent: HTMLElement = this.content): HTMLElement {
         const node: HTMLElement = this.newNode('', 'input',parent);
         node.setAttribute('id', id);
         node.setAttribute('name', name);
+        node.setAttribute('type', 'text');
         node.setAttribute('placeholder', placeholder);
 
         return node;

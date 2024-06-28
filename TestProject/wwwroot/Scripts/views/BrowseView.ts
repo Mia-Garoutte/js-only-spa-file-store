@@ -7,11 +7,12 @@ import BaseView from "./BaseView.js"
 export default class extends BaseView {
 
     api: string;
+    fileApi: string;
 
     async doRender(): Promise<void> {
         const path: string = document.location.pathname.substring("/browse".length);
         this.api = document.location.origin + '/test' + path;
-
+        this.fileApi = document.location.origin + '/test/createfile' + path;
         this.setTitle("Browse");
         turnOnOverlay(this.content);
         await this.getData()
@@ -23,7 +24,8 @@ export default class extends BaseView {
                 this.setTitle(`Browse - ${data.location}`);
                 this.newHeading(data.name);
                 this.makeBreadCrumbs(data.breadCrumb as string[]);
-                this.makeForm();
+                this.makeDirectoryForm();
+                this.makeFileForm();
                 this.makeChildren(data.children as any[]);
                 turnOffOverlay(this.content);
             });
@@ -35,11 +37,30 @@ export default class extends BaseView {
         this.newParagraph(error);
     }
 
-    makeForm(): void {
+    makeFileForm(): void {
+        const form = this.newForm('frmCreateFile') as HTMLFormElement;
+        form.action = `${this.fileApi}`;
+        form.method = 'POST';
+        form.enctype = "multipart/form-data";
+        const fileFile = this.newFileInput('FormFile', 'FormFile', form);
+        const formSubmit = this.newSpan('Upload File', form, 'btn create');
+
+        formSubmit.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            this.gatherFileData(form);
+
+        })
+        form.addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            this.gatherFileData(form);
+        })
+    }
+
+    makeDirectoryForm(): void {
         const form = this.newForm('frmCreateDirectory') as HTMLFormElement;
         form.action = this.api;
         form.method = 'POST';
-        const txtDirectoryName = this.newInput('new directory name', 'directoryName', 'txtNewDirectory', form);
+        const txtDirectoryName = this.newTextInput('new directory name', 'DirectoryName', 'txtNewDirectory', form);
         const formSubmit = this.newSpan('New Directory', form, 'btn create');
 
         formSubmit.addEventListener("click", (evt) => {
@@ -54,11 +75,38 @@ export default class extends BaseView {
 
     }
 
+    async gatherFileData(form: HTMLFormElement): Promise<void> {
+        turnOnOverlay(this.content);
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                alert('Upload failed');
+                turnOffOverlay(this.content);
+                Promise.reject(JSON.stringify(response.statusText));
+            }
+        } catch (error) {
+
+            alert(`Upload failed-${error}`);            
+            Promise.reject(JSON.stringify(error));
+        }
+        finally {
+            turnOffOverlay(this.content);
+            navigateTo(document.location.href);
+        }
+
+        return;
+    }
     async gatherDirectoryData(form: HTMLFormElement): Promise<void> {
         turnOnOverlay(this.content);
         //const formElement: HTMLFormElement = document.querySelector('#frmCreateDirectory');
         const data = new FormData(form);
-        if (data.get('directoryName') === '') {
+        if (data.get('DirectoryName') === '') {
             alert('We cant create nothing');
             turnOffOverlay(this.content);
             return;
@@ -72,13 +120,13 @@ export default class extends BaseView {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ directoryName: data.get('directoryName') })
+            body: JSON.stringify({ DirectoryName: data.get('DirectoryName') })
         })
             .then(response => {
                 if (response.status !== 201) {
                     turnOffOverlay(this.content);
                     alert("the items was not created");
-                    Promise.reject(JSON.stringify(response.statusText));                    
+                    Promise.reject(JSON.stringify(response.statusText));
                 }
                 const location = response.headers.get('location');
                 navigateTo(`/browse${location}`);
@@ -101,6 +149,7 @@ export default class extends BaseView {
         });
         const data = await response.json();
         if (!response.ok) {
+            this.ReportError('Something went wrong while trying to get the data!');
             Promise.reject(JSON.stringify(data));
         }
         return data;
@@ -115,7 +164,15 @@ export default class extends BaseView {
             if (item.destructiveActionAllowed) {
                 this.newSpan('Delete', listItem, 'btn delete', 'data-delete-file');
             }
-            this.newLink(item.name, `/browse${item.location}`, listItem, 'data-link');
+            const link=this.newLink(item.name, '', listItem);
+            if (item.assetType.toLowerCase() === 'directory') {
+                link.setAttribute('data-link', '');
+                link.setAttribute('href', `/browse${item.location}`); 
+            } else {
+                link.setAttribute("target", '_blank');
+                link.setAttribute("download", '');
+                link.setAttribute('href', `/test${item.location}`); 
+            }
         });
 
         return list;
