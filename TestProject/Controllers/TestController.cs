@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using POC.FileStore;
-using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
+using TestProject.Model;
 
 namespace TestProject.Controllers
 {
@@ -23,7 +23,7 @@ namespace TestProject.Controllers
         [Route("search/{search}")]
         public IActionResult Search(string search)
         {
-            SearchResult? result= _fileStore.Search(search);
+            SearchResult? result = _fileStore.Search(search);
             return Ok(result);
         }
         [HttpGet]
@@ -48,12 +48,20 @@ namespace TestProject.Controllers
             Asset? result = await _fileStore.GetAsset(path);
             if (result == null)
             {
+                _logger.LogInformation("Unable to get the asset for {path}.  Please check the logs for errors", path);
                 return NotFound();
             }
 
             if (result is FileAsset theFile)
             {
-                return File(theFile.Contents, theFile.ContentType, fileDownloadName: theFile.Name);
+                try
+                {
+                    return File(theFile.Contents, theFile.ContentType, fileDownloadName: theFile.Name);
+                }
+                catch (Exception err)
+                {
+                    _logger.LogError(err, "An error occurred while sending the {theFile.Name}.  Please check the logs for errors", theFile.Name);
+                }
             }
             return Ok(result);
         }
@@ -73,6 +81,7 @@ namespace TestProject.Controllers
             {
                 return NoContent();
             }
+            _logger.LogInformation("Unable to delete the asset for {path}.  Please check the logs for errors", path);
             return BadRequest();
         }
 
@@ -95,12 +104,13 @@ namespace TestProject.Controllers
 
             if (string.IsNullOrWhiteSpace(form.DirectoryName))
             {
-                return BadRequest();
+                return BadRequest("Directory Name was not supplied.");
             }
 
             string dir = _fileStore.CreateDirectory(Path.Combine(path, form.DirectoryName));
             if (string.IsNullOrWhiteSpace(dir))
             {
+                _logger.LogInformation("Unable to create the directory {} for {path}.  Please check the logs for errors", path);
                 return BadRequest();
             }
             return Created(dir, dir);
@@ -124,11 +134,19 @@ namespace TestProject.Controllers
 
             if (form.FormFile is null)
             {
-                return BadRequest();
+                return BadRequest("There was no file attached");
             }
             using (var memoryStream = new MemoryStream())
             {
-                await form.FormFile.CopyToAsync(memoryStream);
+                try
+                {
+                    await form.FormFile.CopyToAsync(memoryStream);
+                }
+                catch (Exception err)
+                {
+                    _logger.LogCritical(err, "Unable to process the MemoryStream for the uploaded file for {path}.  Please check the logs for errors", path);
+                    return StatusCode(500);
+                }
                 //cap at 2 MB for this
                 //There's a lot of overhead with larger files to stream them properly.
                 if (memoryStream.Length < 2097152)
@@ -138,6 +156,7 @@ namespace TestProject.Controllers
                     string fileName = await _fileStore.CreateFile(path, Path.GetFileName(untrustedFileName), memoryStream.ToArray());
                     if (string.IsNullOrWhiteSpace(fileName))
                     {
+                        _logger.LogInformation("Unable to create the file for {path}.  Please check the logs for errors", path);
                         return BadRequest();
                     }
                     return Created(fileName, fileName);
@@ -148,20 +167,5 @@ namespace TestProject.Controllers
                 }
             }
         }
-    }
-
-    public class DirectoryForm
-    {
-        public string DirectoryName { get; set; } = string.Empty;
-    }
-
-    public class FileForm
-    {
-        [Display(Name = "File")]
-
-        //the controller creates this with serialization. It is not something we would be using anyways.
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public IFormFile FormFile { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     }
 }

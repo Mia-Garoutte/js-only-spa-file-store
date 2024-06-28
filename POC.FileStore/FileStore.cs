@@ -36,21 +36,24 @@ namespace POC.FileStore
             }
         }
 
-        private static bool ValidatePath(string path, string name)
+        private bool ValidatePath(string path, string name)
         {
             bool result = !string.IsNullOrWhiteSpace(path)
                 && path[0] == '\\'
                 && !(badNameBits.Any(s => path.Contains(s))
                 || Path.GetInvalidPathChars().Any(c => path.Contains(c))
                 || Path.GetInvalidFileNameChars().Any(c => name.Contains(c)));
+            if (!result) { _logger.LogInformation("the {path} for the Asset {name} failed validation", path, name); }
+
             return result;
         }
-        private static bool ValidateSearchTerms(string term)
+        private bool ValidateSearchTerms(string term)
         {
-            bool result = !string.IsNullOrWhiteSpace(term)                
+            bool result = !string.IsNullOrWhiteSpace(term)
                 && !(badNameBits.Any(s => term.Contains(s))
                 || Path.GetInvalidPathChars().Any(c => term.Contains(c))
                 || Path.GetInvalidFileNameChars().Any(c => term.Contains(c)));
+            if (!result) { _logger.LogInformation("the search term {term} failed validation", term); }
             return result;
         }
         private string RelativeToAbsoulteFileSystem(string partialPath) => Path.Combine(_fileStoreLocation, partialPath.TrimStart('\\'));
@@ -67,7 +70,7 @@ namespace POC.FileStore
                 Name = string.IsNullOrWhiteSpace(name) ? "Root" : name,
                 Location = urlPath,
                 Children = new List<Asset>(),
-                Parent=GetParentPath(urlPath)
+                Parent = GetParentPath(urlPath)
             };
 
 
@@ -76,7 +79,7 @@ namespace POC.FileStore
                 result.Children.Add(new DirectoryAsset()
                 {
                     Name = Path.GetFileName(dir) ?? string.Empty,
-                    Location = Path.Combine(urlPath, Path.GetFileName(dir) ?? string.Empty).Replace("\\","/")
+                    Location = Path.Combine(urlPath, Path.GetFileName(dir) ?? string.Empty).Replace("\\", "/")
                 });
             }
 
@@ -105,7 +108,7 @@ namespace POC.FileStore
             return size;
         }
 
-        private static bool GenerateVaildFileLocation(string urlPath, out string partialPath, out string name)
+        private bool GenerateVaildFileLocation(string urlPath, out string partialPath, out string name)
         {
             partialPath = urlPath.Replace('/', Path.DirectorySeparatorChar);
             name = partialPath.Split(Path.DirectorySeparatorChar).LastOrDefault("");
@@ -117,6 +120,7 @@ namespace POC.FileStore
             string partialPath, name;
             if (!GenerateVaildFileLocation(destination, out partialPath, out name))
             {
+                _logger.LogWarning("the {destination} failed validation while creating a directory", destination);
                 return string.Empty;
             }
 
@@ -129,11 +133,13 @@ namespace POC.FileStore
                     DirectoryInfo dir = Directory.CreateDirectory(path);
                     return partialPath;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "An error occurred while creating a directory at {path}", path);
                     return string.Empty;
                 }
             }
+            _logger.LogInformation("Unable to create a directory at {path}.  It already exists", path);
             return string.Empty;
         }
 
@@ -143,6 +149,7 @@ namespace POC.FileStore
 
             if (!GenerateVaildFileLocation(urlPath, out partialPath, out name))
             {
+                _logger.LogWarning("the {urlPath} failed validation while deleting an asset", urlPath);
                 return false;
             }
             string path = RelativeToAbsoulteFileSystem(partialPath);
@@ -150,6 +157,7 @@ namespace POC.FileStore
             bool result = true;
             if (!Asset.IsDestructiveActionAllowed(path))
             {
+                _logger.LogWarning("the {path} does not Allow Destructive Actions ", path);
                 return false;
             }
             if (File.Exists(path))
@@ -158,8 +166,9 @@ namespace POC.FileStore
                 {
                     File.Delete(path);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "An error occurred while deleting a file at {path}", path);
                     result = false;
                 }
             }
@@ -169,13 +178,15 @@ namespace POC.FileStore
                 {
                     Directory.Delete(path, true);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "An error occurred while deleting a directory at {path}", path);
                     result = false;
                 }
             }
             else
             {
+                _logger.LogError("There is noting to delete at {path}", path);
                 result = false;
             }
             return result;
@@ -187,6 +198,7 @@ namespace POC.FileStore
 
             if (!GenerateVaildFileLocation(urlPath, out partialPath, out name))
             {
+                _logger.LogWarning("the {urlPath} failed validation while creating a directory", urlPath);
                 return null;
             }
             string path = RelativeToAbsoulteFileSystem(partialPath);
@@ -202,7 +214,6 @@ namespace POC.FileStore
                     SizeInBytes = contents.Length,
                     Contents = contents
                 };
-                
 
                 return file;
             }
@@ -210,6 +221,7 @@ namespace POC.FileStore
             {
                 return GetDirectory(urlPath, path, name);
             }
+            _logger.LogWarning("There is no Asset at {path} to fetch", path);
             return null;
         }
 
@@ -219,6 +231,7 @@ namespace POC.FileStore
 
             if (!GenerateVaildFileLocation(Path.Combine(destination, fileName), out partialPath, out name))
             {
+                _logger.LogWarning("the {destination} failed validation while creating a file", destination);
                 return String.Empty;
             }
             string path = RelativeToAbsoulteFileSystem(partialPath);
@@ -230,11 +243,13 @@ namespace POC.FileStore
                 }
                 else
                 {
+                    _logger.LogWarning("the {destination} for {name} already has a file.", destination,name);
                     return string.Empty;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while creating a file at {path}", path);
                 return string.Empty;
             }
 
@@ -245,6 +260,7 @@ namespace POC.FileStore
         {
             if (!ValidateSearchTerms(search))
             {
+                //already logged in
                 return null;
             }
             SearchResult result = new SearchResult();
@@ -258,19 +274,26 @@ namespace POC.FileStore
 
             long size = 0;
             int rootLength = _fileStoreLocation.Length;
-            foreach (string file in Directory.EnumerateFiles(_fileStoreLocation, result.Term, options))
+            try
             {
-                
-                size = GetFileFromPath(GetSearchLocation(rootLength, file), result.ItemsFound, size, file);
+                foreach (string file in Directory.EnumerateFiles(_fileStoreLocation, result.Term, options))
+                {
+
+                    size = GetFileFromPath(GetSearchLocation(rootLength, file), result.ItemsFound, size, file);
+                }
+            }catch(Exception err)
+            {
+                _logger.LogError(err, "An error occurred while searching for {term}", result.Term);
             }
-            result.SizeInBytes = size; 
+
+            result.SizeInBytes = size;
             return result;
         }
 
-        private static string GetSearchLocation(int rootLength, string fileLocation )
+        private static string GetSearchLocation(int rootLength, string fileLocation)
         {
-            string result = (Path.GetDirectoryName(fileLocation)?.Substring(rootLength) ?? fileLocation.Substring(rootLength)).Replace("\\","/");
-            if(!result.StartsWith("/"))
+            string result = (Path.GetDirectoryName(fileLocation)?.Substring(rootLength) ?? fileLocation.Substring(rootLength)).Replace("\\", "/");
+            if (!result.StartsWith("/"))
             {
                 result = "/" + result;
             }
