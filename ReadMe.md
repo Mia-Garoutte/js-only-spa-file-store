@@ -1,4 +1,4 @@
-FileStoreRootPathFileStoreRootPath# POC
+# POC
 This project was built as a POC without any frameworks.  Yes, React or Next.js would have made this cleaner and a breeze.  
 
 ## requirements
@@ -24,7 +24,9 @@ This project was built as a POC without any frameworks.  Yes, React or Next.js w
 
 * I was going to put in a basic search index library to enable searching file contents, but that seemed like over kill.
 * Authentication and Authorization - really most auth would need to be in the API. Never trust user input.    
- 
+* It does not support large files
+* There is possible issue with the file stream being directly written to a memory stream in the controller.
+  
 ## Getting Started
 
 * the FileStoreRootPath in appsettings.json controls where the files are stored.
