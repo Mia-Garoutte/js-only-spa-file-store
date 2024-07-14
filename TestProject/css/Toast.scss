@@ -1,0 +1,175 @@
+﻿:root {
+    --dark: #78fad1;
+    --light: #ffffff;
+    --success: #0abf30;
+    --error: #e24d4c;
+    --warning: #e9bd0c;
+    --info: #3498db;
+    --random: #eb43ff;
+}
+
+
+.notifications {
+    position: fixed;
+    top: 30px;
+    right: 20px;
+
+    &:where(.toast, .column) {
+        display: flex;
+        align-items: center;
+    }
+
+    .toast {
+        width: 400px;
+        position: relative;
+        overflow: hidden;
+        list-style: none;
+        border-radius: 4px;
+        padding: 16px 17px;
+        margin-bottom: 10px;
+        background: var(--light);
+        justify-content: space-between;
+        animation: show_toast 0.3s ease forwards;
+
+        .buttons .btn {
+            border: none;
+            outline: none;
+            cursor: pointer;
+            margin: 0 5px;
+            color: var(--light);
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+
+        &.hide {
+            animation: hide_toast 0.3s ease forwards;
+        }
+
+        &::before {
+            position: absolute;
+            content: "";
+            height: 3px;
+            width: 100%;
+            bottom: 0px;
+            left: 0px;
+            animation: progress 5s linear forwards;
+        }
+
+        @keyframes progress {
+            100% {
+                width: 0%;
+            }
+        }
+
+        .column i {
+            font-size: 1.75rem;
+        }
+
+        i:last-child {
+            color: #aeb0d7;
+            cursor: pointer;
+
+            &:hover {
+                color: var(--dark);
+            }
+        }
+
+
+        .column span {
+            font-size: 1.07rem;
+            margin-left: 12px;
+        }
+
+        &.success {
+            &::before,
+            .btn#success {
+                background: var(--success);
+            }
+
+            .column i {
+                color: var(--success);
+            }
+        }
+
+        &.error {
+            &::before,
+            .btn#error {
+                background: var(--error);
+            }
+
+            .column i {
+                color: var(--error);
+            }
+        }
+
+        &.warning {
+            &::before,
+            .btn#warning {
+                background: var(--warning);
+            }
+
+            .column i {
+                color: var(---warning);
+            }
+        }
+
+        &.info {
+            &::before,
+            .btn#info {
+                background: var(--info);
+            }
+
+            .column i {
+                color: var(---info);
+            }
+        }
+
+        &.random {
+            &::before,
+            .btn#random {
+                background: var(--random);
+            }
+
+            .column i {
+                color: var(---random);
+            }
+        }
+    }
+
+    @keyframes show_toast {
+        0% {
+            transform: translateX(100%);
+        }
+
+        40% {
+            transform: translateX(-5%);
+        }
+
+        80% {
+            transform: translateX(0%);
+        }
+
+        100% {
+            transform: translateX(-10px);
+        }
+    }
+
+    @keyframes hide_toast {
+        0% {
+            transform: translateX(-10px);
+        }
+
+        40% {
+            transform: translateX(0%);
+        }
+
+        80% {
+            transform: translateX(-5%);
+        }
+
+        100% {
+            transform: translateX(calc(100% + 20px));
+        }
+    }
+}

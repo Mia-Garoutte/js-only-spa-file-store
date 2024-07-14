@@ -1,4 +1,5 @@
-﻿import { handleFileClick } from './file.js';
+﻿import Toast from './Toast.js';
+import { handleFileClick } from './file.js';
 import { navigateTo, router } from './router.js';
 import SearchView from './views/SearchView.js';
 
