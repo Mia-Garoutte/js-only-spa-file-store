@@ -26,7 +26,7 @@ This project was built as a POC without any frameworks.  Yes, React or Next.js w
 * Authentication and Authorization - really most auth would need to be in the API. Never trust user input.    
 * It does not support large files
 * There is possible issue with the file stream being directly written to a memory stream in the controller.
-  
+* This does not meet any ADA standards.
 ## Getting Started
 
 * the FileStoreRootPath in appsettings.json controls where the files are stored.

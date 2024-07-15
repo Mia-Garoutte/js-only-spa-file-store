@@ -94,6 +94,15 @@
     protected addSpan(content: string, parent: HTMLElement = this.content, styles: string = '', dataAttr: string = ''): HTMLElement {
         return this.addNode(content, 'span', parent, styles, dataAttr);
     }
+
+    
+    protected addButton(name: string, click: () => void, parent: HTMLElement = this.content) {
+        const node: HTMLElement = this.addNode(name, 'button', parent, 'btn');
+        node.setAttribute('type', 'button');
+        node.addEventListener('click', click);
+        return node;
+    }
+
     private newNode(content: string, tag: string, styles: string = '', dataAttr: string = ''): HTMLElement {
         const node: HTMLElement = document.createElement(tag);
         if (styles !== '') {
