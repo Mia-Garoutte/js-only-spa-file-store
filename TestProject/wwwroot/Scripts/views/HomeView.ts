@@ -1,4 +1,4 @@
-﻿import { toaster } from "../Toast.js";
+﻿import { ToastTypes, toaster } from "../toaster.js";
 import BaseView from "./BaseView.js"
 
 export default class extends BaseView {
@@ -33,7 +33,8 @@ voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
 occaecat cupidatat non proident,
 sunt in culpa qui officia deserunt mollit anim id est laborum.`);
 
-        this.addButton("Toast", () => { toaster.createToast('note', 'this is a toast') });
+        this.addButton("Info Toast", () => { toaster.createToast(ToastTypes.Info, 'this is a toast') });
+        this.addButton("Danger Toast", () => { toaster.createToast(ToastTypes.Error, 'this is a toast', false) });
         //so many things we could do...return markdown, html...call a service.        
     }
     

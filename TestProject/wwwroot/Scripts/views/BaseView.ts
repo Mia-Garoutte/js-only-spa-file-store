@@ -97,7 +97,8 @@
 
     
     protected addButton(name: string, click: () => void, parent: HTMLElement = this.content) {
-        const node: HTMLElement = this.addNode(name, 'button', parent, 'btn', 'type="button"');
+        const node: HTMLElement = this.addNode(name, 'button', parent, 'btn');
+        node.setAttribute('type', 'button');
         node.addEventListener('click', click);
         return node;
     }

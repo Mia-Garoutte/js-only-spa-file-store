@@ -6,15 +6,20 @@
     --warning: #e9bd0c;
     --info: #3498db;
     --random: #eb43ff;
+    --successbackground: hsl( from var(--success) h s calc(l + 30) );
+    --errorbackground: hsl( from var(--error) h s calc(l + 30) );
+    --infobackground: hsl( from var(--info) h s calc(l + 30) );
+    --warningbackground: hsl( from var(--warning) h s calc(l + 30) );
+    --randombackground: hsl( from var(--random) h s calc(l + 30) );
 }
 
 
 .notifications {
     position: fixed;
-    top: 30px;
+    top: 50px;
     right: 20px;
 
-    &:where(.toast, .column) {
+    :where(.toast, .column) {
         display: flex;
         align-items: center;
     }
@@ -29,7 +34,9 @@
         margin-bottom: 10px;
         background: var(--light);
         justify-content: space-between;
+        border: 1px solid black;
         animation: show_toast 0.3s ease forwards;
+        // color: white;
 
         .buttons .btn {
             border: none;
@@ -46,6 +53,10 @@
             animation: hide_toast 0.3s ease forwards;
         }
 
+        &.autoclose::before {
+            animation: progress 5s linear forwards;
+        }
+
         &::before {
             position: absolute;
             content: "";
@@ -53,7 +64,6 @@
             width: 100%;
             bottom: 0px;
             left: 0px;
-            animation: progress 5s linear forwards;
         }
 
         @keyframes progress {
@@ -75,15 +85,13 @@
             }
         }
 
-
         .column span {
             font-size: 1.07rem;
             margin-left: 12px;
         }
 
         &.success {
-            &::before,
-            .btn#success {
+            &::before {
                 background: var(--success);
             }
 
@@ -93,8 +101,9 @@
         }
 
         &.error {
-            &::before,
-            .btn#error {
+            background-color: var(--errorbackground);
+
+            &::before {
                 background: var(--error);
             }
 
@@ -104,35 +113,38 @@
         }
 
         &.warning {
-            &::before,
-            .btn#warning {
+            background-color: var(--warningbackground);
+
+            &::before {
                 background: var(--warning);
             }
 
             .column i {
-                color: var(---warning);
+                color: var(--warning);
             }
         }
 
         &.info {
-            &::before,
-            .btn#info {
+            background-color: var(--infobackground);
+
+            &::before {
                 background: var(--info);
             }
 
             .column i {
-                color: var(---info);
+                color: var(--info);
             }
         }
 
         &.random {
-            &::before,
-            .btn#random {
+            background-color: var(--randombackground);
+
+            &::before {
                 background: var(--random);
             }
 
             .column i {
-                color: var(---random);
+                color: var(--random);
             }
         }
     }
