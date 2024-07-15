@@ -1,5 +1,6 @@
 ﻿import { turnOffOverlay, turnOnOverlay } from "../overlay.js";
 import { navigateTo, router } from "../router.js";
+import { ToastTypes, toaster } from "../toaster.js";
 import BaseView from "./BaseView.js"
 
 // this file needs to be re-factored to separate some concerns.
@@ -33,7 +34,7 @@ export default class extends BaseView {
 
     }
 
-    
+
     //data should be typed...
     makeStatics(data: any): void {
         this.addSpan(`${data.name} has ${data.totalFiles} files for ${Math.ceil(data.sizeInBytes / 1024)}KB.`)
@@ -49,12 +50,15 @@ export default class extends BaseView {
 
         formSubmit.addEventListener("click", (evt) => {
             evt.preventDefault();
+            formSubmit.setAttribute('disabled', '');
             this.gatherFileData(form);
-
+            formSubmit.removeAttribute('disabled');
         })
         form.addEventListener("submit", (evt) => {
             evt.preventDefault();
+            formSubmit.setAttribute('disabled', '');
             this.gatherFileData(form);
+            formSubmit.removeAttribute('disabled');
         })
     }
 
@@ -67,20 +71,29 @@ export default class extends BaseView {
 
         formSubmit.addEventListener("click", (evt) => {
             evt.preventDefault();
+            formSubmit.setAttribute('disabled', '');
             this.gatherDirectoryData(form);
-
+           // formSubmit.removeAttribute('disabled');
         })
         form.addEventListener("submit", (evt) => {
             evt.preventDefault();
+            formSubmit.setAttribute('disabled', '');
             this.gatherDirectoryData(form);
+            formSubmit.removeAttribute('disabled');
         })
 
     }
 
     async gatherFileData(form: HTMLFormElement): Promise<void> {
-        turnOnOverlay(this.content);
-        const formData = new FormData(form);
 
+        const formData = new FormData(form);
+        if (!formData.entries().next().value[1].name) {
+            toaster.createErrorToast(`No file selected`);
+            return;
+        }
+        toaster.createInfoToast(`Upload started`);
+
+        form.reset();
         try {
             const response = await fetch(form.action, {
                 method: 'POST',
@@ -88,29 +101,27 @@ export default class extends BaseView {
             });
 
             if (!response.ok) {
-                alert('Upload failed');
-                turnOffOverlay(this.content);
+                toaster.createErrorToast(`Upload Failed`);
+
                 Promise.reject(JSON.stringify(response.statusText));
             }
+            else {
+                toaster.createSuccessToast(`Upload succeed`);
+            }
         } catch (error) {
-
-            alert(`Upload failed-${error}`);            
+            toaster.createErrorToast(`Upload Failed-${error}`);
             Promise.reject(JSON.stringify(error));
         }
         finally {
-            turnOffOverlay(this.content);
             navigateTo(document.location.href);
         }
 
         return;
     }
     async gatherDirectoryData(form: HTMLFormElement): Promise<void> {
-        turnOnOverlay(this.content);
-        //const formElement: HTMLFormElement = document.querySelector('#frmCreateDirectory');
         const data = new FormData(form);
         if (data.get('DirectoryName') === '') {
-            alert('We cant create nothing');
-            turnOffOverlay(this.content);
+            toaster.createErrorToast('We cant create nothing');           
             return;
         }
         //for (let entry of data) {
@@ -126,19 +137,20 @@ export default class extends BaseView {
         })
             .then(response => {
                 if (response.status !== 201) {
-                    turnOffOverlay(this.content);
-                    alert("the items was not created");
+                    toaster.createErrorToast("the item was not created");
                     Promise.reject(JSON.stringify(response.statusText));
                 }
-                const location = response.headers.get('location');
-                navigateTo(`/browse${location}`);
+                else {
+                    toaster.createSuccessToast("the directory was created");
+                    const location = response.headers.get('location');
+                    navigateTo(`/browse${location}`);
+                }
+                
             })
             .catch(error => {
-                alert("the items was not created due to an error");
-                Promise.reject(JSON.stringify(error));
-                console.error('Unable to delete item.', error)
-            });
-        turnOffOverlay(this.content);
+                toaster.createErrorToast("the item was not created due to an error");
+                Promise.reject(JSON.stringify(error));               
+            });       
         return;
     }
 

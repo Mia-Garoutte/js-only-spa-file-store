@@ -239,6 +239,15 @@ nav.treelist ul {
             background-color: rgb(0 0 0 / 100%);
         }
     }
+
+
+    &[disabled] {
+        background-color: gray !important;
+
+        &:hover {
+            background-color: gray !important;
+        }
+    }
 }
 
 

@@ -3,7 +3,7 @@
     Error = "error",
     Warning = "warning",
     Info = "info",
-    Random="random"
+    Random = "random"
 }
 
 enum IconType {
@@ -19,7 +19,7 @@ export default class Toast {
         this.toastLocation = toastLocation;
     }
 
-    removeToast = (toast: HTMLElement) :void => {
+    removeToast = (toast: HTMLElement): void => {
         toast.classList.add("hide")
         if (toast.hasAttribute('timeoutId')) {
             clearTimeout(parseInt(toast.getAttribute('timeoutId')));
@@ -27,7 +27,7 @@ export default class Toast {
         setTimeout(() => toast.remove(), 500)
     }
 
-    createToast = (icon: ToastTypes, message: string, autoClose: boolean=true, timer: number = 5000): number => {
+    createToast = (icon: ToastTypes, message: string, autoClose: boolean = true, timer: number = 5000): number => {
         const toast = document.createElement("li");
         toast.className = `toast ${icon} ${autoClose ? 'autoclose' : ''}`;
         toast.innerHTML = `<div class="column">
@@ -39,10 +39,30 @@ export default class Toast {
         toast.appendChild(closeMark);
         closeMark.addEventListener('click', () => this.removeToast(toast));
         this.toastLocation.appendChild(toast);
-        if (!autoClose) return 0;      
+        if (!autoClose) return 0;
         const id = setTimeout(() => this.removeToast(toast), timer)
         toast.setAttribute('timeoutId', id.toString());
         return id;
+    }
+
+    createSuccessToast = (message: string, autoClose: boolean = true, timer: number = 5000): number => {
+        return this.createToast(ToastTypes.Success, message, autoClose, timer);
+    }
+
+    createErrorToast = (message: string, autoClose: boolean = true, timer: number = 5000): number => {
+        return this.createToast(ToastTypes.Error, message, autoClose, timer);
+    }
+
+    createWarningToast = (message: string, autoClose: boolean = true, timer: number = 5000): number => {
+        return this.createToast(ToastTypes.Warning, message, autoClose, timer);
+    }
+
+    createInfoToast = (message: string, autoClose: boolean = true, timer: number = 5000): number => {
+        return this.createToast(ToastTypes.Info, message, autoClose, timer);
+    }
+
+    createRandomToast = (message: string, autoClose: boolean = true, timer: number = 5000): number => {
+        return this.createToast(ToastTypes.Random, message, autoClose, timer);
     }
 }
 
