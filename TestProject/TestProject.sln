@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{4E986E68-9
 		..\ReadMe.md = ..\ReadMe.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.FileUploads", "..\Web.FileUploads\Web.FileUploads.csproj", "{D69112F8-E49F-4339-82C4-FF7D24EAFA58}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{96F407EA-0D9D-4CA5-8EAE-2C9E3DAB117B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96F407EA-0D9D-4CA5-8EAE-2C9E3DAB117B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96F407EA-0D9D-4CA5-8EAE-2C9E3DAB117B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D69112F8-E49F-4339-82C4-FF7D24EAFA58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D69112F8-E49F-4339-82C4-FF7D24EAFA58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D69112F8-E49F-4339-82C4-FF7D24EAFA58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D69112F8-E49F-4339-82C4-FF7D24EAFA58}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
